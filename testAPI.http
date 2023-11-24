@@ -1,0 +1,2 @@
+GET http://localhost:5000/users/login?email=abcd%40gmail.com&password=123456 
+
