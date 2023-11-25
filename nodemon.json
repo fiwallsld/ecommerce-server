@@ -1,11 +1,11 @@
 {
-    "env": {
-        "LINK_ROOT": "http://localhost:8000",
-        "PORT": 8000,
-        "MONGO_URL": "mongodb+srv://ecommerce:frankfullstack@cluster0.fxowvpt.mongodb.net/ecommerce",
-        "MONGO_USER": "ecommerce",
-        "MONGO_PASS": "frankfullstack",
-        "JWT_KEY": "frankfullstack",
-        "SENDGRID_KEY": "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"
-    }
+  "env": {
+    "LINK_ROOT": "http://localhost:8000",
+    "PORT": 8000,
+    "MONGO_URL": "mongodb+srv://ecommerce:frankfullstack@cluster0.fxowvpt.mongodb.net/ecommerce",
+    "MONGO_USER": "ecommerce",
+    "MONGO_PASS": "frankfullstack",
+    "JWT_KEY": "frankfullstack",
+    "SENDGRID_KEY": "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"
+  }
 }

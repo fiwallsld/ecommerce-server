@@ -1,91 +1,90 @@
-const router = require("express").Router();
+const router = require('express').Router();
 
-const validator = require("express-validator").body;
-const validQuery = require("express-validator").query;
+const validQuery = require('express-validator').query;
 
-const User = require("../models/user");
-const userController = require("../controllers/user");
-const isAuth = require("../middleware/is-auth");
-const checkRole = require("../middleware/checkRole");
+const User = require('../models/user');
+const userController = require('../controllers/user');
+const isAuth = require('../middleware/is-auth');
+const checkRole = require('../middleware/checkRole');
 
-router.get("", isAuth, userController.getAutoLogin);
+router.get('', isAuth, userController.getAutoLogin);
 
-router.get("/all", isAuth, checkRole(["admin"]), userController.getAllUsers);
+router.get('/all', isAuth, checkRole(['admin']), userController.getAllUsers);
 
 router.get(
-  "/detail/:id",
+  '/detail/:id',
   isAuth,
   [
-    validQuery("fullname", "Please put valid full name!!!")
+    validQuery('fullname', 'Please put valid full name!!!')
       .trim()
-      .isLength({ min: 5 }),
-    validQuery("email", "Please put valid email!!")
+      .isLength({min: 5}),
+    validQuery('email', 'Please put valid email!!')
       .isEmail()
-      .custom((value, { req }) => {
-        return User.findOne({ email: value }).then((userDoc) => {
-          if (userDoc) return Promise.reject("Email address already exists!");
+      .custom((value, {req}) => {
+        return User.findOne({email: value}).then((userDoc) => {
+          if (userDoc) return Promise.reject('Email address already exists!');
         });
       })
       .normalizeEmail(),
-    validQuery("role", "Please choose a role for this account!!")
+    validQuery('role', 'Please choose a role for this account!!')
       .trim()
-      .isLength({ min: 6 }),
-    validQuery("phone", "Please put valid phone number!!!")
+      .isLength({min: 6}),
+    validQuery('phone', 'Please put valid phone number!!!')
       .trim()
       .isMobilePhone(),
   ],
-  checkRole(["admin"]),
-  userController.getUser
+  checkRole(['admin']),
+  userController.getUser,
 );
 
 router.put(
-  "/edit/:id",
+  '/edit/:id',
   isAuth,
-  checkRole(["admin"]),
-  userController.putEditUser
+  checkRole(['admin']),
+  userController.putEditUser,
 );
 router.delete(
-  "/delete/:id",
+  '/delete/:id',
   isAuth,
-  checkRole(["admin"]),
-  userController.deleteUser
+  checkRole(['admin']),
+  userController.deleteUser,
 );
 
-router.get("/logout", isAuth, userController.getLogout);
+router.get('/logout', isAuth, userController.getLogout);
 
 router.post(
-  "/signup",
+  '/signup',
   [
-    validQuery("fullname", "Please put valid full name!!!")
+    validQuery('fullname', 'Please put valid full name!!!')
       .trim()
-      .isLength({ min: 5 }),
-    validQuery("email", "Please put valid email!!")
+      .isLength({min: 5}),
+    validQuery('email', 'Please put valid email!!')
       .isEmail()
-      .custom((value, { req }) => {
-        return User.findOne({ email: value }).then((userDoc) => {
-          if (userDoc) return Promise.reject("Email address already exists!");
+      .custom((value, {req}) => {
+        return User.findOne({email: value}).then((userDoc) => {
+          if (userDoc) return Promise.reject('Email address already exists!');
         });
       })
       .normalizeEmail(),
-    validQuery("password", "Please put valid password! Least 6 character")
+    validQuery('password', 'Please put valid password! Least 6 character')
       .trim()
-      .isLength({ min: 6 }),
-    validQuery("phone", "Please put valid phone number!!!")
+      .isLength({min: 6}),
+    validQuery('phone', 'Please put valid phone number!!!')
       .trim()
       .isMobilePhone(),
   ],
-  userController.postSignup
+  userController.postSignup,
 );
 
 router.post(
-  "/login",
+  '/login',
   [
-    validQuery("email", "Please put valid email!!").trim().isEmail(),
-    validQuery("password", "Please put valid password! Least 6 character")
+    validQuery('email', 'Please put valid email!!').trim().isEmail(),
+    validQuery('password', 'Please put valid password! Least 6 character')
       .trim()
-      .isLength({ min: 6 }),
+      .isLength({min: 6}),
   ],
-  userController.postLogin
+  userController.postLogin,
 );
 
 module.exports = router;

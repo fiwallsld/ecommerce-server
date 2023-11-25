@@ -1,28 +1,29 @@
-const { validationResult } = require("express-validator");
-const User = require("../models/user");
-const Chat = require("../models/chat");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const {validationResult} = require('express-validator');
+const User = require('../models/user');
+const Chat = require('../models/chat');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-const handleError = require("./handleError");
+const handleError = require('./handleError');
 
 exports.getAutoLogin = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.userId);
 
     if (!user) {
-      const error = new Error("User not found.");
+      const error = new Error('User not found.');
       error.statusCode = 404;
       throw error;
     }
     res.status(201).json({
-      message: "Auto login success.",
+      message: 'Auto login success.',
       user: {
         fullname: user.fullname,
         userId: user._id,
         email: user.email,
         cart: user.cart,
         roomId: req.user.roomId,
+        token: req.user.token,
       },
     });
   } catch (err) {
@@ -38,12 +39,12 @@ exports.getAllUsers = async (req, res, next) => {
     const users = await User.find();
 
     if (!users) {
-      const error = new Error("User not found.");
+      const error = new Error('User not found.');
       error.statusCode = 404;
       throw error;
     }
     res.status(201).json({
-      message: "Get all users success.",
+      message: 'Get all users success.',
       users: users,
     });
   } catch (err) {
@@ -61,12 +62,12 @@ exports.getUser = async (req, res, next) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      const error = new Error("User not found.");
+      const error = new Error('User not found.');
       error.statusCode = 404;
       throw error;
     }
     res.status(201).json({
-      message: "Get user success.",
+      message: 'Get user success.',
       user: {
         fullname: user.fullname,
         email: user.email,
@@ -96,7 +97,7 @@ exports.putEditUser = async (req, res, next) => {
         (errorData = {
           ...errorData,
           [item.path]: item.msg,
-        })
+        }),
     );
     return res.status(422).json(errorData);
   }
@@ -110,7 +111,7 @@ exports.putEditUser = async (req, res, next) => {
     });
 
     if (!user) {
-      const error = new Error("User not found.");
+      const error = new Error('User not found.');
       error.statusCode = 404;
       throw error;
     }
@@ -118,7 +119,7 @@ exports.putEditUser = async (req, res, next) => {
     await user.save();
 
     res.status(201).json({
-      message: "Get user success.",
+      message: 'Get user success.',
       user: {
         fullname: user.fullname,
         email: user.email,
@@ -137,13 +138,13 @@ exports.putEditUser = async (req, res, next) => {
 exports.deleteUser = async (req, res, next) => {
   const userId = req.params.id;
 
-  console.log("Delete user----", userId);
+  console.log('Delete user----', userId);
 
   try {
     const user = await User.findById(userId);
 
     if (!user) {
-      const error = new Error("No exiting user!!!");
+      const error = new Error('No exiting user!!!');
       error.httpStatusCode = 404;
       throw error;
     }
@@ -151,7 +152,7 @@ exports.deleteUser = async (req, res, next) => {
     await User.findByIdAndDelete(userId);
 
     res.status(200).json({
-      message: "Delete user success.",
+      message: 'Delete user success.',
       user: user,
     });
   } catch (err) {
@@ -163,9 +164,12 @@ exports.deleteUser = async (req, res, next) => {
 };
 
 exports.getLogout = async (req, res, next) => {
-  console.log("getLogout");
+  // console.log('getLogout');
+  if (req.user.role === 'admin') res.clearCookie('admin_token');
+  else res.clearCookie('access_token');
+
   res.status(201).json({
-    message: "Logout success.",
+    message: 'Logout success.',
   });
 };
 
@@ -181,7 +185,7 @@ exports.postSignup = async (req, res, next) => {
         (errorData = {
           ...errorData,
           [item.path]: item.msg,
-        })
+        }),
     );
     return res.status(422).json(errorData);
   }
@@ -191,7 +195,7 @@ exports.postSignup = async (req, res, next) => {
     const chatRoom = new Chat({
       content: [
         {
-          message: "Chào bạn, bạn muốn hỗ trợ sản phẩm nào vậy ạ.",
+          message: 'Chào bạn, bạn muốn hỗ trợ sản phẩm nào vậy ạ.',
           is_admin: true,
         },
       ],
@@ -204,7 +208,7 @@ exports.postSignup = async (req, res, next) => {
       fullname: req.query.fullname,
       phone: req.query.phone,
       password: passHash,
-      role: "client",
+      role: 'client',
       cart: [],
       roomId: chatRoom._id.toString(),
     });
@@ -212,11 +216,12 @@ exports.postSignup = async (req, res, next) => {
     const user = await newUser.save();
 
     chatRoom.userId = newUser._id.toString();
+    chatRoom.fullname = newUser.fullname;
 
     await chatRoom.save();
 
     res.status(201).json({
-      message: "Signup success! Redirecting to login page.",
+      message: 'Signup success! Redirecting to login page.',
       user: {
         email: user.email,
         fullname: user.fullname,
@@ -228,7 +233,7 @@ exports.postSignup = async (req, res, next) => {
 };
 
 exports.postLogin = (req, res, next) => {
-  console.log("Login input =", req.query);
+  // console.log('Login input =', req.query);
 
   const error = validationResult(req);
   if (!error.isEmpty()) {
@@ -241,7 +246,7 @@ exports.postLogin = (req, res, next) => {
         (errorData = {
           ...errorData,
           [item.path]: item.msg,
-        })
+        }),
     );
     return res.status(422).json(errorData);
   }
@@ -250,13 +255,13 @@ exports.postLogin = (req, res, next) => {
   const password = req.query.password;
   let loaderUser;
 
-  User.findOne({ email: email })
+  User.findOne({email: email})
     .then((user) => {
       if (!user) {
         // handleError.throwError(401, 'Auser')
         return res
           .status(401)
-          .json({ status: 401, email: "Email is not exiting!!!" });
+          .json({status: 401, email: 'Email is not exiting!!!'});
       }
       loaderUser = user;
       return bcrypt.compare(password, user.password);
@@ -265,7 +270,7 @@ exports.postLogin = (req, res, next) => {
       if (!isEqual) {
         return res
           .status(422)
-          .json({ status: 422, password: "Password is wrong!!!" });
+          .json({status: 422, password: 'Password is wrong!!!'});
       }
 
       const token = jwt.sign(
@@ -275,15 +280,21 @@ exports.postLogin = (req, res, next) => {
           role: loaderUser.role,
           roomId: loaderUser?.roomId,
         },
-        "frankfullstack",
+        process.env.JWT_KEY,
         {
-          expiresIn: "4h",
-        }
+          expiresIn: '4h',
+        },
       );
-      // console.log("Login success!");
+      let nameToken = 'access_token';
+      if (loaderUser.role === 'admin') nameToken = 'admin_token';
+
+      res.cookie(nameToken, token, {
+        httpOnly: true,
+        maxAge: 4 * 60 * 60 * 1000,
+      });
 
       res.status(200).json({
-        message: "Login success! Redirecting to homepage.",
+        message: 'Login success! Redirecting to homepage.',
         user: {
           userId: loaderUser._id,
           email: loaderUser.email,

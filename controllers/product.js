@@ -1,16 +1,16 @@
-const { validationResult } = require("express-validator");
-const User = require("../models/user");
-const Product = require("../models/product");
-const handleError = require("./handleError");
-const fs = require("fs");
-const path = require("path");
+const {validationResult} = require('express-validator');
+const User = require('../models/user');
+const Product = require('../models/product');
+const handleError = require('./handleError');
+const fs = require('fs');
+const path = require('path');
 
 exports.getProducts = async (req, res, next) => {
   try {
     const products = await Product.find();
 
     res.status(200).json({
-      message: "Get products success.",
+      message: 'Get products success.',
       products: products,
       totalProducts: products.length,
     });
@@ -29,13 +29,13 @@ exports.getProduct = async (req, res, next) => {
     const product = await Product.findById(prodId);
 
     if (!product) {
-      const error = new Error("No exiting product!!!");
+      const error = new Error('No exiting product!!!');
       error.httpStatusCode = 404;
       throw error;
     }
 
     res.status(200).json({
-      message: "Get product success.",
+      message: 'Get product success.',
       product: product,
     });
   } catch (err) {
@@ -55,7 +55,7 @@ exports.deleteProduct = async (req, res, next) => {
     const product = await Product.findById(prodId);
 
     if (!product) {
-      const error = new Error("No exiting product!!!");
+      const error = new Error('No exiting product!!!');
       error.httpStatusCode = 404;
       throw error;
     }
@@ -67,7 +67,7 @@ exports.deleteProduct = async (req, res, next) => {
     }
 
     res.status(200).json({
-      message: "Delete product success.",
+      message: 'Delete product success.',
       product: product,
     });
   } catch (err) {
@@ -93,7 +93,7 @@ exports.putEditProduct = async (req, res, next) => {
         (errorData = {
           ...errorData,
           [item.path]: item.msg,
-        })
+        }),
     );
     return res.status(422).json(errorData);
   }
@@ -102,7 +102,7 @@ exports.putEditProduct = async (req, res, next) => {
     const product = await Product.findById(prodId);
 
     if (!product) {
-      const error = new Error("No exiting product!!!");
+      const error = new Error('No exiting product!!!');
       error.httpStatusCode = 404;
       throw error;
     }
@@ -114,7 +114,7 @@ exports.putEditProduct = async (req, res, next) => {
 
     await product.save();
     res.status(201).json({
-      message: "Edit product success.",
+      message: 'Edit product success.',
       product: product,
     });
   } catch (err) {
@@ -137,12 +137,12 @@ exports.postNewProduct = async (req, res, next) => {
         (errorData = {
           ...errorData,
           [item.path]: item.msg,
-        })
+        }),
     );
     return res.status(422).json(errorData);
   }
 
-  if (!req.files) handleError.notFoundError("No images provided!!!");
+  if (!req.files) handleError.notFoundError('No images provided!!!');
 
   const files = req.files;
 
@@ -158,15 +158,15 @@ exports.postNewProduct = async (req, res, next) => {
     short_desc: req.body.short_desc,
     long_desc: req.body.long_desc,
     ...imgs,
-    price: "5000000",
-    count: "5",
+    price: '5000000',
+    count: '5',
   });
 
   try {
     await product.save();
 
     res.status(200).json({
-      message: "Post a new product success.",
+      message: 'Post a new product success.',
       product: product,
     });
   } catch (err) {
@@ -181,34 +181,35 @@ exports.getPagination = async (req, res, next) => {
   const currentPage = req.query.page || 1;
   const key = req.query.search;
   const category = req.query.category;
-  // console.log("getPagination", req.query);
+  // console.log('getPagination', req.query);
 
   // let totalProducts;
-  let results;
   try {
-    const totalProducts = await Product.find().countDocuments();
+    const allProducts = await Product.find();
+    // const totalProducts = await Product.find().countDocuments();
+    const totalProducts = allProducts.length;
 
     const products = await Product.find()
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
 
-    results = [...products];
+    let results = [...products];
 
-    if (category !== "all")
-      results = products.filter((prod) => prod.category == category);
+    if (category !== 'all')
+      results = allProducts.filter((prod) => prod.category == category);
 
-    if (key !== "")
-      results = products.filter(
+    if (key !== '')
+      results = allProducts.filter(
         (prod) =>
           prod.name.toLowerCase().includes(key.toLowerCase()) ||
-          prod.long_desc.toLowerCase().includes(key.toLowerCase())
+          prod.long_desc.toLowerCase().includes(key.toLowerCase()),
       );
 
     res.status(200).json({
-      message: "Fetched products successfully.",
+      message: 'Fetched products successfully.',
       products: results,
       totalProducts:
-        category === "all" && key === "" ? totalProducts : results.length,
+        category === 'all' && key === '' ? totalProducts : results.length,
     });
   } catch (error) {
     handleError.summaryError(error, next);
@@ -217,11 +218,11 @@ exports.getPagination = async (req, res, next) => {
 exports.getCategory = (req, res, next) => {};
 
 const clearImg = (filePath) => {
-  filePath = path.join(__dirname, "..", filePath);
+  filePath = path.join(__dirname, '..', filePath);
 
   fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {
-      console.log("Not exiting file!");
+      console.log('Not exiting file!');
       return;
     }
 

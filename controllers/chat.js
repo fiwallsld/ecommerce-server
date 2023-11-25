@@ -1,10 +1,10 @@
-const { validationResult } = require("express-validator");
-const User = require("../models/user");
-const Chat = require("../models/chat");
+const {validationResult} = require('express-validator');
+const User = require('../models/user');
+const Chat = require('../models/chat');
 
-const handleError = require("./handleError");
+const handleError = require('./handleError');
 
-const socket = require("../socket");
+const socket = require('../socket');
 
 exports.getMessageByRoomId = async (req, res, next) => {
   // console.log("Get mes by room ---", req.query.roomId);
@@ -20,7 +20,7 @@ exports.getMessageByRoomId = async (req, res, next) => {
     let chat = await Chat.findById(roomId);
 
     res.status(200).json({
-      message: "Get cart success!",
+      message: 'Get cart success!',
       content: chat.content,
     });
   } catch (err) {
@@ -32,10 +32,10 @@ exports.getMessageByRoomId = async (req, res, next) => {
 
 exports.getAllRoom = async (req, res, next) => {
   try {
-    const chatRooms = await Chat.find().sort({ createdAt: -1 });
+    const chatRooms = await Chat.find().sort({createdAt: -1});
 
     res.status(200).json({
-      message: "Get cart success!",
+      message: 'Get cart success!',
       allRoom: chatRooms,
     });
   } catch (err) {
@@ -48,9 +48,10 @@ exports.getAllRoom = async (req, res, next) => {
 exports.createNewRoom = async (req, res, next) => {
   const chat = new Chat({
     userId: null,
+    fullname: 'NoName',
     content: [
       {
-        message: "Chào bạn, bạn muốn hỗ trợ sản phẩm nào vậy ạ.",
+        message: 'Chào bạn, bạn muốn hỗ trợ sản phẩm nào vậy ạ.',
         is_admin: true,
       },
     ],
@@ -60,7 +61,7 @@ exports.createNewRoom = async (req, res, next) => {
     await chat.save();
 
     res.status(200).json({
-      message: "Create new room success",
+      message: 'Create new room success',
       roomId: chat._id.toString(),
     });
   } catch (err) {
@@ -76,6 +77,15 @@ exports.addMessage = async (req, res, next) => {
   try {
     const chat = await Chat.findById(data.roomId);
 
+    if (data.message === '/delete' && data.is_admin.toString() === 'true') {
+      await Chat.findByIdAndDelete(data.roomId);
+
+      return res.status(203).json({
+        status: 203,
+        message: 'Delete room chat success',
+      });
+    }
+
     chat.content.push({
       message: data.message,
       is_admin: data.is_admin,
@@ -83,10 +93,10 @@ exports.addMessage = async (req, res, next) => {
 
     await chat.save();
 
-    socket.getIO().emit("receive_message", data);
+    socket.getIO().emit('receive_message', data);
 
     res.status(200).json({
-      message: "add message success",
+      message: 'add message success',
       content: chat.content,
     });
   } catch (err) {
