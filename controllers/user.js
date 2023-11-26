@@ -209,7 +209,9 @@ exports.postSignup = async (req, res, next) => {
       phone: req.query.phone,
       password: passHash,
       role: 'client',
-      cart: [],
+      cart: {
+        items: [],
+      },
       roomId: chatRoom._id.toString(),
     });
 
